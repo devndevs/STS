@@ -1,0 +1,6 @@
+{  "name": "stocktransactionsimulator",
+  "version": "1.0.0",
+  "description": "Raw Node.js app",
+  "main": "index.js",
+  "type": "module"
+}
