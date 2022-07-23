@@ -1,5 +1,5 @@
-import finnhub from "finnhub";
 import { randomUUID } from "node:crypto";
+import { finnhubClient } from "./finnhubKey.js";
 import fs from "fs/promises";
 
 class Stock {
@@ -27,10 +27,6 @@ class Stock {
     this.owned = false;
   }
 }
-
-const api_key = finnhub.ApiClient.instance.authentications["api_key"];
-api_key.apiKey = "cav3u2iad3i5kt6h2nq0";
-const finnhubClient = new finnhub.DefaultApi();
 
 let currentDate = new Date();
 let cday = currentDate.getDate();
