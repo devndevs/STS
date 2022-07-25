@@ -146,30 +146,11 @@ async function createStockInstance() {
 
 export const stockInfo = await createStockInstance();
 
-// async function hydrateAppFromApi() {
-//   try {
-//     const getDataApi = await stockInfo;
-//     const getDataDb = await fs.readFile("./rawStockData.json");
-//     const writeData = await fs.writeFile(
-//       "./rawStockData.json",
-//       JSON.stringify(getDataApi)
-//     );
-//     if (getDataDb.length === 0) {
-//       await writeData;
-//       await getDataDb;
-//       return JSON.parse(getDataDb);
-//     } else {
-//       await getDataDb;
-//       return JSON.parse(getDataDb);
-//     }
-//   } catch (error) {
-//     console.log(error);
-//   }
-// }
-
 async function capitalBank() {
   try {
-    const data = await fs.readFile("money.json", { encoding: "utf8" });
+    const data = await fs.readFile("dataBases/money.json", {
+      encoding: "utf8",
+    });
     return JSON.parse(data);
   } catch (err) {
     console.log(err);

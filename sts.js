@@ -1,19 +1,27 @@
 import { stockInfo, capital } from "./finnhub.js";
+import fs from "fs/promises";
 
+const ownedStocksFromDb = fs.readFile("dataBases/ownedStocks.json", {
+  encoding: "utf8",
+});
+let stonks =
+  ownedStocksFromDb.length > 0
+    ? [...JSON.parse(ownedStocksFromDb), ...stockInfo]
+    : stockInfo;
 let buyingPower = capital;
 const recommendedStocks = [];
 const stockTransactions = [];
 const ownedStocks = [];
-// console.log(firstAppData);
 
 //TODO: sell stocks that below 6% eps
 function sellUnderPerformers(stocks) {
+  let startingCash = buyingPower;
   let accumulatedCash = 0;
   stocks.forEach((stock) => {
-    //TODO: remember to reverse owned statement
     if (stock.epsEstimate < 0.06 && stock.owned) {
       console.log(`Selling ${stock.symbol} for ${stock.price}`);
-      accumulatedCash += stock.price - 15;
+      accumulatedCash += stock.price;
+      accumulatedCash -= 15;
       stockTransactions.push(stock);
       return;
     } else if (stock.epsEstimate > 0.06 && !stock.owned) {
@@ -21,10 +29,9 @@ function sellUnderPerformers(stocks) {
       return;
     }
   });
-  return accumulatedCash;
+  return (accumulatedCash += startingCash);
 }
-buyingPower += sellUnderPerformers(stockInfo);
-console.log("buying power: ", buyingPower);
+buyingPower = sellUnderPerformers(stonks);
 
 function buyStocks(stocks) {
   let startingCash = buyingPower;
@@ -35,31 +42,34 @@ function buyStocks(stocks) {
       !stock.owned &&
       stock.sell - stock.buy - 1 < 0.2
     ) {
-      if (accumulatedCash < stock.price && startingCash < stock.price) {
+      if (stock.price > startingCash + accumulatedCash) {
         console.log(`Not enough cash to buy ${stock.symbol}`);
         return;
       }
       console.log(`Buying ${stock.symbol} for ${stock.price}`);
-      accumulatedCash -= stock.price - 15;
+      accumulatedCash -= stock.price;
+      accumulatedCash -= 15;
+
       stock.owned = !stock.owned;
       ownedStocks.push(stock);
       stockTransactions.push(stock);
-      return accumulatedCash;
+      return;
     } else if (stock.owned) {
       console.log(`Selling ${stock.symbol} for ${stock.price}`);
-      accumulatedCash += stock.currentPrice - 15;
+      accumulatedCash += stock.currentPrice;
+      accumulatedCash -= 15;
       stockTransactions.push(stock);
-      return accumulatedCash;
+      return;
     }
   });
   return (accumulatedCash += startingCash);
 }
 
-buyStocks(recommendedStocks);
-// console.log("recommendedStocks", recommendedStocks);
-// console.log("stockTransactions", stockTransactions);
-// console.log("ownedStocks", ownedStocks);
-console.log("buyingPower", buyingPower);
+buyingPower = buyStocks(recommendedStocks);
 
-// - TODO Track all stocks purchased
-// - TODO Track all transactions */
+console.log(`Your buying power is: ${buyingPower}`);
+console.log("Your stock transactions are:", stockTransactions);
+console.log("Your owned stocks are:", ownedStocks);
+
+fs.writeFile("dataBases/ownedStocks.json", JSON.stringify(ownedStocks));
+fs.writeFile("dataBases/money.json", JSON.stringify(buyingPower));
